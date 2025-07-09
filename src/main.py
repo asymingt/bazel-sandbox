@@ -1,7 +1,8 @@
+import os
 from python.runfiles import Runfiles
 
 r = Runfiles.Create()
-p = r.Rlocation("experimental/data/foo.txt")
+p = r.Rlocation("experimental/share/experimental/data/foo.txt")
 print("Found data file path: ", p)
 with open(p, "r") as f:
     print(f.read())

@@ -1,7 +1,76 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_java//java:defs.bzl", "java_binary")
+load("@rules_python//python:defs.bzl", "py_binary")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+
+load("defs.bzl", "ros_share")
 
 compile_pip_requirements(
     name = "requirements",
     src = "requirements_lock.in",
     requirements_txt = "requirements_lock.txt",
 )
+
+ros_share(
+    name = "share",
+    module_name = "experimental",
+    data = glob([
+        "data/**",
+        "launch/**",
+    ]),
+)
+
+cc_binary(
+    name = "prog_cc",
+    srcs = ["src/main.cc"],
+    data = [":data"],
+    deps = ["@rules_cc//cc/runfiles"],
+)
+
+java_binary(
+    name = "prog_java",
+    srcs = ["src/Main.java"],
+    main_class = "org.ros.Main",
+    data = [":data"],
+    deps = ["@rules_java//java/runfiles"],
+)
+
+py_binary(
+    name = "prog_py",
+    main = "main.py",
+    srcs = ["src/main.py"],
+    data = [":data"],
+    deps = ["@rules_python//python/runfiles"],
+)
+
+rust_binary(
+    name = "prog_rs",
+    srcs = ["src/main.rs"],
+    data = [":data"],
+    deps = ["@rules_rust//rust/runfiles"],
+)
+
+pkg_files(
+    name = "bin",
+    srcs = [
+        ":prog_cc",
+        ":prog_java",
+        ":prog_py",
+        ":prog_rs",
+    ],
+    prefix = "bin",
+)
+
+pkg_tar(
+    name = "experimental",
+    srcs = [
+        ":bin",
+    ],
+    extension = "tar.gz",
+)
+
+

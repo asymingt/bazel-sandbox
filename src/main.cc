@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
     std::cerr << "ERROR: " <<  error.c_str() << std::endl;
     return 1;
   }
-  std::string path = runfiles->Rlocation("experimental/data/foo.txt");
+  std::string path = runfiles->Rlocation("share/experimental/foo.txt");
   std::cout << "Found data file path: " << path.c_str() << std::endl;
   std::ifstream myfile(path);
   std::cout << "Content: " << std::endl;
