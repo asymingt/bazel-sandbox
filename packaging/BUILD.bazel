@@ -1,0 +1,125 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_java//java:defs.bzl", "java_binary")
+load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+
+load("@pip_packaging//:requirements.bzl", "requirement")
+
+load("defs.bzl", "ros_share", "ros_package")
+
+compile_pip_requirements(
+    name = "requirements",
+    src = "requirements_lock.in",
+    requirements_txt = "requirements_lock.txt",
+)
+
+filegroup(
+    name = "data",
+    srcs = glob(["data/**"]),
+)
+
+ros_share(
+    name = "experimental_data",
+    module_name = "experimental",
+    data = glob(["data/**"]),
+)
+
+# Libraries 
+
+cc_library(
+    name = "core",
+    srcs = ["src/core.cc"],
+    hdrs = ["src/core.hh"],
+    include_prefix = "src"
+)
+
+# Binaries
+
+cc_binary(
+    name = "prog_cc",
+    srcs = ["src/main.cc"],
+    data = [":experimental_data"],
+    deps = [
+        "@rules_cc//cc/runfiles",
+        ":core",
+    ],
+    linkstatic = False
+)
+
+java_binary(
+    name = "prog_java",
+    srcs = ["src/Main.java"],
+    main_class = "org.ros.Main",
+    data = [":experimental_data"],
+    deps = ["@rules_java//java/runfiles"],
+)
+
+py_binary(
+    name = "prog_py",
+    main = "main.py",
+    srcs = ["src/main.py"],
+    data = [":experimental_data"],
+    deps = [
+        requirement("numpy"),
+        "@rules_python//python/runfiles"
+    ],
+)
+
+rust_binary(
+    name = "prog_rs",
+    srcs = ["src/main.rs"],
+    data = [":experimental_data"],
+    deps = ["@rules_rust//rust/runfiles"],
+)
+
+# Packaging
+
+ros_package(
+    libraries = [":core"],
+    executables = [":prog_cc"],
+    share = [":data"],
+)
+
+# pkg_files(
+#     name = "lib",
+#     srcs = [
+#         ":core"
+#     ],
+#     prefix = "lib",
+#     visibility = ["//visibility:public"],
+# )
+
+# pkg_files(
+#     name = "bin",
+#     srcs = [
+#         ":prog_cc",
+#     ],
+#     prefix = "bin",
+#     visibility = ["//visibility:public"],
+# )
+
+# pkg_files(
+#     name = "share",
+#     srcs = [
+#         ":data",
+#     ],
+#     prefix = "share",
+#     visibility = ["//visibility:public"],
+# )
+
+# pkg_tar(
+#     name = "experimental",
+#     srcs = [
+#         ":lib",
+#         ":bin",
+#         ":share"
+#     ],
+#     extension = "tar.gz",
+#     visibility = ["//visibility:public"],
+# )
+
+
