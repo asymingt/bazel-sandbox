@@ -1,0 +1,18 @@
+
+load("@pip_testing//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+
+compile_pip_requirements(
+    name = "requirements",
+    src = "requirements_lock.in",
+    requirements_txt = "requirements_lock.txt",
+)
+
+py_test(
+    name = "test_logging",
+    srcs = ["test_logging.py"],
+    main = "test_logging.py",
+    python_version = "PY3",
+    deps = [requirement("pytest")],
+)
